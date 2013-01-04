@@ -37,26 +37,26 @@ namespace SubSonic.Schema
             var result = new List<string>();
             var existing = source.Provider.GetTableFromDB(source.Name);
             //remove columns not found
-            foreach(var c in existing.Columns)
+            foreach (var c in existing.Columns)
             {
                 var colFound = source.GetColumn(c.Name);
-                if(colFound == null)
+                if (colFound == null)
                 {
                     //remove it
                     result.Add(source.DropColumnSql(c.Name));
                 }
             }
             //loop the existing table and add columns not found, update columns found...
-            foreach(var col in source.Columns)
+            foreach (var col in source.Columns)
             {
                 var colFound = existing.GetColumn(col.Name);
-                if(colFound == null)
+                if (colFound == null)
                 {
                     //add it
                     string addSql = col.CreateSql;
                     //when adding a column, and UPDATE it appended
                     //need to split that out into its own command
-                    var sqlCommands = addSql.Split(new char[]{';'},StringSplitOptions.RemoveEmptyEntries);
+                    var sqlCommands = addSql.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var s in sqlCommands)
                     {
                         result.Add(s);
@@ -65,12 +65,12 @@ namespace SubSonic.Schema
                 else
                 {
                     //don't want to alter the PK
-                    if(!colFound.Equals(col) & ! col.IsPrimaryKey)
+                    if (!colFound.Equals(col) & !col.IsPrimaryKey)
                     {
-                            
-                        if(!String.IsNullOrEmpty(col.AlterSql))
+
+                        if (!String.IsNullOrEmpty(col.AlterSql))
                             result.Add(col.AlterSql);
-                        
+
                     }
                 }
             }
@@ -90,7 +90,7 @@ namespace SubSonic.Schema
             var table = type.ToSchemaTable(provider);
             var existing = provider.GetTableFromDB(table.Name);
 
-            if(existing != null)
+            if (existing != null)
             {
                 //if the tables exist, reconcile the columns
                 result.AddRange(CreateColumnMigrationSql(table));
@@ -108,9 +108,9 @@ namespace SubSonic.Schema
             var result = new List<string>();
 
             //pull all the objects out of the namespace
-            var modelTypes = _modelAssembly.GetTypes().Where(x => x.Namespace.StartsWith(baseNameSpace));
+            var modelTypes = _modelAssembly.GetTypes().Where(x => x.Namespace.StartsWith(baseNameSpace) & !x.IsEnum);
 
-            foreach(var type in modelTypes)
+            foreach (var type in modelTypes)
                 result.AddRange(MigrateFromModel(type, provider));
 
             return result.ToArray();
